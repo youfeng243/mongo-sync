@@ -30,3 +30,6 @@ CHECK_PERIOD = 3
 
 # 删除记录表前置标识
 DELETE_TABLE_FLAG = "delete_"
+
+# 同步记录表
+SYNC_TABLE_FLAG = "sync_"
