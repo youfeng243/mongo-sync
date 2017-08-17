@@ -15,6 +15,10 @@ log = Logger("mongo-sync.log").get_logger()
 def main():
     log.info("启动mongo同步程序...")
 
+    # 启动任务分割线程
+
+    # 启动任务执行线程
+
 
 if __name__ == '__main__':
     main()
