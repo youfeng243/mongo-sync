@@ -186,6 +186,17 @@ class RunTask(object):
             # 存储任务执行记录
             self.data_sync_db.save(task_table_name, task)
 
+        # 这里需要判断是否所有的任务都已经完成了
+        all_finish = True
+        for task_item in task_list:
+            if not task_item.get('finish'):
+                all_finish = False
+
+        # 如果流程执行到最下面，则证明所有的同步都成功了
+        task['finish'] = all_finish
+        task['_utime'] = common.get_now_time()
+        self.data_sync_db.save(task_table_name, task)
+
     # 开始同步数据
     def sync_data(self):
         self.log.info('开始同步数据...')
