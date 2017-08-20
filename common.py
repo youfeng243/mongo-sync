@@ -66,3 +66,13 @@ def get_table_list():
         log.exception(e)
 
     return table_list
+
+
+# 获得任务表信息
+def get_task_table_list(table_list):
+    return [config.SYNC_TABLE_FLAG + x for x in table_list]
+
+
+# 获得删除记录表信息
+def get_del_table_list(table_list):
+    return [config.DELETE_TABLE_FLAG + x for x in table_list]

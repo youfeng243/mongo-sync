@@ -12,19 +12,19 @@
 import time
 
 import common
-import config
 from common import data_sync_db
 from config import CHECK_PERIOD
 
 
 class GenTask(object):
-    PERIOD_TIME = 4 * 3600
+    SLEEP_PERIOD_TIME = 4 * 3600
+    SEGMENT_PERIOD_TIME = 10 * 60
 
     def __init__(self, log):
         self.log = log
         self.data_sync_db = data_sync_db
         # 任务表
-        self.task_table_list = [config.SYNC_TABLE_FLAG + x for x in common.get_table_list()]
+        self.task_table_list = common.get_task_table_list(common.get_table_list())
         self.log.info("当前需要同步的任务表:")
         self.log.info(self.task_table_list)
 
@@ -42,14 +42,13 @@ class GenTask(object):
             'task': list(),
         }
 
-        segment = 5 * 60
         start_time = _id + " 00:00:00"
         end_time = _id + " 23:59:59"
         start_time = common.get_time_stamp(start_time)
         end_time = common.get_time_stamp(end_time)
         self.log.info('当前计算时间段: {} - {}'.format(start_time, end_time))
         while start_time <= end_time:
-            temp_time = start_time + segment - 1
+            temp_time = start_time + self.SEGMENT_PERIOD_TIME - 1
 
             start_time_str = common.get_format_time(start_time)
             end_time_str = common.get_format_time(temp_time)
@@ -64,7 +63,7 @@ class GenTask(object):
             task['task'].append(task_item)
             self.log.info('当前任务时间段: {} - {}'.format(start_time_str, end_time_str))
 
-            start_time += segment
+            start_time += self.SEGMENT_PERIOD_TIME
         return task
 
     # 生成当日任务
@@ -118,7 +117,7 @@ class GenTask(object):
 
                 # 休眠
                 self.log.info("任务生成与检测已完成周期执行, 开始休眠...zzz")
-                time.sleep(self.PERIOD_TIME)
+                time.sleep(self.SLEEP_PERIOD_TIME)
             except Exception as e:
                 self.log.error('生成任务线程异常: ')
                 self.log.exception(e)
