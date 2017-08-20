@@ -336,7 +336,7 @@ class MongDb(object):
                     bulk.find({'_id': _id}).upsert().update({'$set': item_copy})
                 count += 1
             bulk.execute({'w': 0})
-            self.log.info('insert_logs: {length}'.format(length=len(data_list)))
+            # self.log.info('insert_logs: {length}'.format(length=len(data_list)))
         except Exception as e:
             self.log.exception(e)
             count = 0

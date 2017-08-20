@@ -50,6 +50,7 @@ class RunTask(object):
 
     # 同步修改记录
     def sync_update_data(self, table_name, update_item, start_time, end_time):
+        count = 0
         result_list = list()
 
         # 如果已经完成了修改操作同步 也不在进行同步
@@ -68,6 +69,7 @@ class RunTask(object):
                                                                          {"$gte": start_time,
                                                                           "$lte": end_time}
                                                                      }):
+                count += 1
                 item['logic_delete'] = 0
                 result_list.append(item)
                 if len(result_list) >= self.MAX_BATCH_SIZE:
@@ -86,6 +88,8 @@ class RunTask(object):
         update_item['_utime'] = common.get_now_time()
         update_item['finish'] = finish
 
+        self.log.info("更新数据量为: {} {} - {} {}".format(
+            table_name, start_time, end_time, count))
         return finish
 
     # 同步删除记录
@@ -105,6 +109,7 @@ class RunTask(object):
                 table_name, start_time, end_time))
             return False
 
+        count = 0
         result_list = list()
         try:
             # 这里查找删除记录表
@@ -121,8 +126,14 @@ class RunTask(object):
                 if data_item is None:
                     continue
 
+                # 统计
+                count += 1
+
                 # 设置逻辑删除字段 为 1 已经删除该字段
                 data_item['logic_delete'] = 1
+
+                # 删除字段必须要修改_utime
+                data_item['_utime'] = common.get_now_time()
 
                 result_list.append(data_item)
                 if len(result_list) >= self.MAX_BATCH_SIZE:
@@ -140,7 +151,8 @@ class RunTask(object):
         # 更新时间
         delete_item['_utime'] = common.get_now_time()
         delete_item['finish'] = finish
-
+        self.log.info("删除数据量为: {} {} - {} {}".format(
+            table_name, start_time, end_time, count))
         return finish
 
     # 同步单个表信息
