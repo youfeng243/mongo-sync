@@ -27,7 +27,7 @@ class Logger(object):
         self.log = logging.getLogger(filename)
         self.log.setLevel(self.level)
 
-        handler = TimedRotatingFileHandler(self.file_path, when='H', interval=12, backupCount=5, encoding='utf-8')
+        handler = TimedRotatingFileHandler(self.file_path, when='D', interval=1, backupCount=5, encoding='utf-8')
         handler.suffix = "%Y-%m-%d.log"
 
         # 设置输出格式
