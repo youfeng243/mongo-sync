@@ -119,6 +119,21 @@ class MongDb(object):
             if cursor is not None:
                 cursor.close()
 
+    def traverse_sort(self, table, where=None, sort=None):
+        cursor = None
+        try:
+            self.check_connected()
+            where = {} if where is None else where
+            cursor = self.db[table].find(where, no_cursor_timeout=True).sort(sort)
+            for item in cursor:
+                yield item
+        except Exception as e:
+            self.log.exception(e)
+            raise e
+        finally:
+            if cursor is not None:
+                cursor.close()
+
     def traverse_batch(self, table, where=None):
         cursor = None
         try:
@@ -133,7 +148,7 @@ class MongDb(object):
         finally:
             if cursor is not None:
                 cursor.close()
-                self.log.info('关闭traverse_batch游标')
+                # self.log.info('关闭traverse_batch游标')
 
     def traverse_field(self, table, where, field):
         cursor = None
@@ -299,30 +314,59 @@ class MongDb(object):
             self.log.exception(e)
             raise e
 
-    # def insert_batch_data(self, table, data_list, is_order=False, insert=False):
-    #     count = 0
-    #     if data_list is None:
-    #         return count
-    #
-    #     length = len(data_list)
-    #     if length <= 0:
-    #         return count
-    #
-    #     try:
-    #         self.check_connected()
-    #         bulk = self.db[table].initialize_ordered_bulk_op() if is_order else self.db[
-    #             table].initialize_unordered_bulk_op()
-    #         for item in data_list:
-    #             if insert:
-    #                 bulk.insert(item)
-    #             else:
-    #                 _id = item.pop('_id')
-    #                 bulk.find({'_id': _id}).upsert().update({'$set': item})
-    #             count += 1
-    #         bulk.execute({'w': 0})
-    #         self.log.info('insert_logs: {length}'.format(length=len(data_list)))
-    #     except Exception as e:
-    #         self.log.exception(e)
-    #         count = 0
-    #
-    #     return count
+    def insert_batch_data(self, table, data_list, is_order=False, insert=False):
+        count = 0
+        if data_list is None:
+            return count
+
+        length = len(data_list)
+        if length <= 0:
+            return count
+
+        try:
+            self.check_connected()
+            bulk = self.db[table].initialize_ordered_bulk_op() if is_order else self.db[
+                table].initialize_unordered_bulk_op()
+            for item in data_list:
+                if insert:
+                    bulk.insert(item)
+                else:
+                    item_copy = item.copy()
+                    _id = item_copy.pop('_id')
+                    bulk.find({'_id': _id}).upsert().update({'$set': item_copy})
+                count += 1
+            bulk.execute({'w': 0})
+            self.log.info('insert_logs: {length}'.format(length=len(data_list)))
+        except Exception as e:
+            self.log.exception(e)
+            count = 0
+
+        return count
+
+        # def insert_batch_data(self, table, data_list, is_order=False, insert=False):
+        #     count = 0
+        #     if data_list is None:
+        #         return count
+        #
+        #     length = len(data_list)
+        #     if length <= 0:
+        #         return count
+        #
+        #     try:
+        #         self.check_connected()
+        #         bulk = self.db[table].initialize_ordered_bulk_op() if is_order else self.db[
+        #             table].initialize_unordered_bulk_op()
+        #         for item in data_list:
+        #             if insert:
+        #                 bulk.insert(item)
+        #             else:
+        #                 _id = item.pop('_id')
+        #                 bulk.find({'_id': _id}).upsert().update({'$set': item})
+        #             count += 1
+        #         bulk.execute({'w': 0})
+        #         self.log.info('insert_logs: {length}'.format(length=len(data_list)))
+        #     except Exception as e:
+        #         self.log.exception(e)
+        #         count = 0
+        #
+        #     return count

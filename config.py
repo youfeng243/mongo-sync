@@ -16,6 +16,14 @@ APP_DATA_CONFIG = {
     "password": "read",
 }
 
+TARGET_CONFIG = {
+    "host": "172.16.215.2",
+    "port": 40042,
+    "db": "test",
+    "username": "test",
+    "password": "test",
+}
+
 # 数据同步记录
 DATA_SYNC_CONFIG = {
     "host": "172.16.215.2",

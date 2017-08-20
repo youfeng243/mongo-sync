@@ -14,6 +14,7 @@ import time
 import common
 from common import data_sync_db
 from config import CHECK_PERIOD
+from mongo import MongDb
 
 
 class GenTask(object):
@@ -28,8 +29,19 @@ class GenTask(object):
         self.log.info("当前需要同步的任务表:")
         self.log.info(self.task_table_list)
 
+        # 给任务表建立finish索引
+        self.create_index()
+
     def __call__(self, *args, **kwargs):
         self.start(*args, **kwargs)
+
+    # 创建索引
+    def create_index(self):
+        self.log.info("开始给任务表创建索引...")
+        for table_name in self.task_table_list:
+            self.data_sync_db.create_index(table_name, [('finish', MongDb.ASCENDING)])
+
+        self.log.info("任务表索引创建完成...")
 
     # 生成任务信息
     def gen_task_item(self, _id):
@@ -39,7 +51,7 @@ class GenTask(object):
             'finish': False,
             '_in_time': common.get_now_time(),
             '_utime': common.get_now_time(),
-            'task': list(),
+            'task_list': list(),
         }
 
         start_time = _id + " 00:00:00"
@@ -57,10 +69,18 @@ class GenTask(object):
                 'start_time': start_time_str,
                 'end_time': end_time_str,
                 'finish': False,
-                'error_times': 0,
-                '_utime': common.get_now_time(),
+                'update': {
+                    'finish': False,
+                    'error_times': 0,
+                    '_utime': common.get_now_time(),
+                },
+                'delete': {
+                    'finish': False,
+                    'error_times': 0,
+                    '_utime': common.get_now_time(),
+                }
             }
-            task['task'].append(task_item)
+            task['task_list'].append(task_item)
             self.log.info('当前任务时间段: {} - {}'.format(start_time_str, end_time_str))
 
             start_time += self.SEGMENT_PERIOD_TIME

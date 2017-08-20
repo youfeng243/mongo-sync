@@ -11,7 +11,7 @@ import datetime
 import time
 
 import config
-from config import APP_DATA_CONFIG, DATA_SYNC_CONFIG
+from config import APP_DATA_CONFIG, DATA_SYNC_CONFIG, TARGET_CONFIG
 from logger import Logger
 from mongo import MongDb
 
@@ -21,6 +21,11 @@ log = Logger("mongo-sync.log").get_logger()
 app_data_db = MongDb(APP_DATA_CONFIG['host'], APP_DATA_CONFIG['port'], APP_DATA_CONFIG['db'],
                      APP_DATA_CONFIG['username'],
                      APP_DATA_CONFIG['password'], log=log)
+
+# M2同步目标库
+m2_db = MongDb(TARGET_CONFIG['host'], TARGET_CONFIG['port'], TARGET_CONFIG['db'],
+               TARGET_CONFIG['username'],
+               TARGET_CONFIG['password'], log=log)
 
 # 同步信息记录db
 data_sync_db = MongDb(DATA_SYNC_CONFIG['host'], DATA_SYNC_CONFIG['port'], DATA_SYNC_CONFIG['db'],
@@ -68,9 +73,19 @@ def get_table_list():
     return table_list
 
 
+# 获得任务表名称
+def get_task_table_name(table_name):
+    return config.SYNC_TABLE_FLAG + table_name
+
+
 # 获得任务表信息
 def get_task_table_list(table_list):
     return [config.SYNC_TABLE_FLAG + x for x in table_list]
+
+
+# 获得删除表名称
+def get_del_table_name(table_name):
+    return config.DELETE_TABLE_FLAG + table_name
 
 
 # 获得删除记录表信息
