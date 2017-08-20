@@ -191,6 +191,7 @@ class RunTask(object):
         for task_item in task_list:
             if not task_item.get('finish'):
                 all_finish = False
+                break
 
         # 如果流程执行到最下面，则证明所有的同步都成功了
         task['finish'] = all_finish
