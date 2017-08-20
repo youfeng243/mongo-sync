@@ -198,7 +198,9 @@ class RunTask(object):
         for table_name in self.app_data_table_list:
 
             task_table_name = common.get_task_table_name(table_name)
+            self.log.info('当前同步的表名称: {}'.format(table_name))
             self.log.info('当前同步的任务表名称: {}'.format(task_table_name))
+
             # 按表遍历同步数据, 从时间最久远开始遍历
             for task in self.data_sync_db.traverse_sort(task_table_name,
                                                         {'finish': {'$ne': True}},
